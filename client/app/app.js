@@ -6,9 +6,18 @@ var App = (function() {
 	var onMessage = function(message) {
 		$('#channelIn')[0].value += event.data;
 	}
+	var showUserMessage = function(message) {
+		$('#message').html(message);
+	}
+	var onChannelOpen = function() {
+		$('#channelWrapper').show();
+		$('#handshake').hide();
+		showUserMessage('Connection successful!');
+	}
 	var initializeRTC = function() {
 		channel = new Peeer({
 			onMessage: onMessage,
+			onChannelOpen: onChannelOpen,
 			onCandidate: function(candidate) {
 				socket.emit('rtcMessage', {
 					type:'candidate',
@@ -54,23 +63,23 @@ var App = (function() {
 		initialize: function() {
 			socket = io.connect(SOCKET_ADDRESS);
 			socket.on('error', function() {
-				$('#message').html("Error connecting to the handshake server");
+				showUserMessage("Error connecting to the handshake server");
 			});
 			socket.on('connect', function() {
-				$('#message').html("Socket server connected");
+				showUserMessage("Socket server connected");
 				socket.emit('getKey');
 			});
 			socket.on('disconnect', function() {
-				$('#message').html("Socket server disconnected");
+				showUserMessage("Socket server disconnected");
 			});
 			socket.on('key', function(data) {
 				$('#thiskey').html(data.key);
 			});
 			socket.on('msg', function(data) {
-				$('#message').html(data.message);
+				showUserMessage(data.message);
 			});
 			socket.on('gotPeer', function(data) {
-				$('#message').html("got peer:" + data.key);
+				showUserMessage("got peer:" + data.key);
 				initializeRTC();
 				startRTC();
 			});
@@ -97,14 +106,12 @@ var App = (function() {
 				var key = $('#key').val();
 				socket.emit('setKey', {key: key});
 			});
-			$('#disconnect').click(function() {
-				socket.disconnect();
-			});
 			$('#channelSend').click(function() {
 				var message = $('#channelOut').val();
 				$('#channelOut').val('');
 				channel.send(message);
 			});
+			$('#channelWrapper').hide();
 		}
 	}
 	return App;

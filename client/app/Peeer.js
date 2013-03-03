@@ -19,6 +19,9 @@ var Peeer = (function() {
 		var configureDataChannel = function() {
 			dataChannel.onopen = function() {
 				console.log('data channel open');
+				if(params.onChannelOpen) {
+					params.onChannelOpen();
+				}
 			};
   			dataChannel.onclose = function() {
   				console.log('data channel close');
